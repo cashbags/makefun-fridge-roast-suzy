@@ -50,7 +50,7 @@
 // such a line would fail criterion 1, the first and most important cut,
 // against any genuine fridge roast.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 // The roast. One line, 87 characters, deadpan.
@@ -74,3 +74,11 @@ const outPath = process.argv[2] ?? "/output/entry.txt";
 
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, LINE, "utf8");
+
+// Verify the write: read the file back and confirm it holds exactly the
+// line. A partial or altered write must fail loudly here, in the sandbox,
+// rather than shipping a truncated entry to the scorer.
+const written = readFileSync(outPath, "utf8");
+if (written !== LINE) {
+  throw new Error("entry.txt does not match the line after writing");
+}
